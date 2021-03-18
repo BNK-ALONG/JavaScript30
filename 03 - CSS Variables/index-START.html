@@ -1,36 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <title>Scoped CSS Variables and JS</title>
 </head>
+
 <body>
   <h2>Update CSS Variables with <span class='hl'>JS</span></h2>
 
   <div class="controls">
     <label for="spacing">Spacing:</label>
-    <input type="range" name="spacing" min="10" max="200" value="10" data-sizing="px">
+    <input id="spacing" type="range" name="spacing" min="10" max="200" value="10" data-sizing="px">
 
     <label for="blur">Blur:</label>
-    <input type="range" name="blur" min="0" max="25" value="10" data-sizing="px">
+    <input id="blur" type="range" name="blur" min="0" max="25" value="10" data-sizing="px">
 
     <label for="base">Base Color</label>
-    <input type="color" name="base" value="#ffc600">
+    <input id="base" type="color" name="base" value="#ffc600">
   </div>
 
   <img src="https://source.unsplash.com/7bwQXzbF6KE/800x500">
 
   <style>
-
     /*
       misc styles, nothing to do with CSS variables
     */
-
-    body {
-      text-align: center;
+    /* global */
+    :root {
+      --spacing: 10px;
+      --blur: 10px;
+      --base: #ffc600;
     }
 
     body {
+      text-align: center;
       background: #193549;
       color: white;
       font-family: 'helvetica neue', sans-serif;
@@ -43,12 +47,53 @@
     }
 
     input {
-      width:100px;
+      width: 100px;
+    }
+
+    img {
+      padding: var(--spacing, 0px);
+      filter: blur(var(--blur, 0));
+      background-color: var(--base, #193549);
     }
   </style>
 
   <script>
+    /*
+
+    考验：
+    1. :root
+    2. CSS 变量 var
+    3. input事件change,mousemove(为什么要用这个？因为滑动滑块的同时展示效果要同步)
+    */
+    /**
+    CSS变量（自定义属性）：
+    用法：
+      属性名要以两个减号(--)命名，大小写敏感；
+      属性名也是有作用域的，作用域就是对应的选择器；
+      自定义属性值可以被继承；
+      备用值：从var第一个逗号到最后的内容都是备用值，仅当第一个参数未定义或无效时启用；
+    好处：
+      高复用，维护性高；语义化标识；
+    JS：
+    获取某一DOM的CSS变量：
+    element.style.getPropertyValue("--color"); //和获取其他属性值是一样的方法
+    获取任意DOM节点上的CSS变量：
+    getComputedStyle(element).getPropertyValue("--color");
+    修改一个DOM节点上的CSS变量：
+    element.style.setProperty("--color", #ffffff);
+    */
+    const rootStyle = document.documentElement.style;
+    let controls = document.querySelector('.controls');
+    const updateStyle = evt => {
+      let el = evt.target;
+      if(el.tagName !== 'INPUT') return;
+      let { name, value, dataset: { sizing = '' } } = el;
+      rootStyle.setProperty(`--${name}`, `${value}${sizing}`);
+    }
+    controls.addEventListener('change', updateStyle);
+    controls.addEventListener('mousemove', updateStyle);
   </script>
 
 </body>
+
 </html>
